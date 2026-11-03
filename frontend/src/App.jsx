@@ -4,6 +4,8 @@ import Login from "./pages/Login";
 import EmployeeDashboard from "./pages/EmployeeDashboard";
 import Dashboard from "./pages/Dashboard";
 import AcceptInvite from "./pages/AcceptInvite";
+import PendingRequests from "./pages/PendingRequests";
+import AdminOverview from "./pages/AdminOverview";
 
 function navigate(path, replace = false) {
   const method = replace ? "replaceState" : "pushState";
@@ -70,8 +72,17 @@ export default function App() {
         return;
       }
 
-      const allowedPath = account.role === "admin" ? "/admin" : "/employee";
       const requestedPath = pathname.replace(/\/+$/, "") || "/";
+      const adminPaths = [
+        "/admin",
+        "/admin/overview",
+        "/admin/directory",
+        "/admin/employees",
+        "/admin/requests",
+      ];
+      const allowedPath = account.role === "admin"
+        ? adminPaths.includes(requestedPath) ? requestedPath : "/admin"
+        : "/employee";
       const requestedRole = requestedPath === "/admin" || requestedPath.startsWith("/admin/")
         ? "admin"
         : requestedPath === "/employee" || requestedPath.startsWith("/employee/")
@@ -83,6 +94,11 @@ export default function App() {
         setToken(null);
         setAccount(null);
         navigate("/login", true);
+        return;
+      }
+
+      if (account.role === "admin" && requestedPath === "/admin/employees") {
+        navigate("/admin/directory", true);
         return;
       }
 
@@ -141,7 +157,37 @@ export default function App() {
   }
 
   if (account.role === "admin") {
-    return <Dashboard email={account.email} onLogout={onLogout} />;
+    if (pathname.replace(/\/+$/, "") === "/admin/requests") {
+      return (
+        <PendingRequests
+          email={account.email}
+          onLogout={onLogout}
+          onBack={() => navigate("/admin/directory")}
+        />
+      );
+    }
+
+    if (pathname.replace(/\/+$/, "") === "/admin/directory") {
+      return (
+        <Dashboard
+          email={account.email}
+          onLogout={onLogout}
+          onOpenRequests={() => navigate("/admin/requests")}
+          onNavigateOverview={() => navigate("/admin/overview")}
+          onNavigateEmployees={() => navigate("/admin/directory")}
+        />
+      );
+    }
+
+    return (
+      <AdminOverview
+        email={account.email}
+        onLogout={onLogout}
+        onOpenRequests={() => navigate("/admin/requests")}
+        onNavigateEmployees={() => navigate("/admin/directory")}
+        onNavigateOverview={() => navigate("/admin/overview")}
+      />
+    );
   }
 
   return <Login onLogin={onLogin} />;

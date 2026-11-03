@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { apiRequest } from "../api";
+import { apiRequest, downloadFile, uploadFile } from "../api";
 import Brand from "../components/Brand";
 import { initials } from "../components/helpers";
 
@@ -18,6 +18,12 @@ export default function EmployeePortal({ email, onLogout, onProfileUpdated }) {
   const [changingPassword, setChangingPassword] = useState(false);
   const [showPasswords, setShowPasswords] = useState(false);
   const [passwordFormOpen, setPasswordFormOpen] = useState(false);
+  const [documents, setDocuments] = useState([]);
+  const [documentsLoading, setDocumentsLoading] = useState(true);
+  const [documentError, setDocumentError] = useState("");
+  const [documentNotice, setDocumentNotice] = useState("");
+  const [uploadingDocument, setUploadingDocument] = useState(false);
+  const [busyDocumentId, setBusyDocumentId] = useState(null);
   const [form, setForm] = useState({
     name: "",
     email: "",
@@ -32,6 +38,67 @@ export default function EmployeePortal({ email, onLogout, onProfileUpdated }) {
       .catch((err) => setError(err.message || "Could not load your profile."))
       .finally(() => setLoading(false));
   }, []);
+
+  useEffect(() => {
+    apiRequest("/employees/me/documents")
+      .then(setDocuments)
+      .catch((err) =>
+        setDocumentError(err.message || "Could not load your documents.")
+      )
+      .finally(() => setDocumentsLoading(false));
+  }, []);
+
+  async function uploadDocument(event) {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    setDocumentError("");
+    setDocumentNotice("");
+    setUploadingDocument(true);
+    try {
+      const uploaded = await uploadFile("/employees/me/documents", file);
+      setDocuments((current) => [uploaded, ...current]);
+      setDocumentNotice("Aadhaar card uploaded. OCR text is ready for administrator review.");
+    } catch (err) {
+      setDocumentError(err.message || "Could not upload this document.");
+    } finally {
+      setUploadingDocument(false);
+      event.target.value = "";
+    }
+  }
+
+  async function downloadDocument(documentFile) {
+    setDocumentError("");
+    try {
+      await downloadFile(
+        `/employees/me/documents/${documentFile.id}`,
+        documentFile.filename
+      );
+    } catch (err) {
+      setDocumentError(err.message || "Could not download this document.");
+    }
+  }
+
+  async function deleteDocument(documentFile) {
+    if (!window.confirm(`Delete ${documentFile.filename}?`)) return;
+
+    setDocumentError("");
+    setDocumentNotice("");
+    setBusyDocumentId(documentFile.id);
+    try {
+      await apiRequest(`/employees/me/documents/${documentFile.id}`, {
+        method: "DELETE",
+      });
+      setDocuments((current) =>
+        current.filter((item) => item.id !== documentFile.id)
+      );
+      setDocumentNotice("Document deleted.");
+    } catch (err) {
+      setDocumentError(err.message || "Could not delete this document.");
+    } finally {
+      setBusyDocumentId(null);
+    }
+  }
 
   function beginEdit() {
     setForm({
@@ -198,6 +265,9 @@ export default function EmployeePortal({ email, onLogout, onProfileUpdated }) {
                 <div>
                   <p className="panel-kicker">PERSONAL DETAILS</p>
                   <h2>My employee profile</h2>
+                  <span className="employee-id-badge">
+                    Employee ID: {employee.employee_number}
+                  </span>
                 </div>
                 {!editing && (
                   <button className="refresh-button" onClick={beginEdit}>
@@ -307,6 +377,75 @@ export default function EmployeePortal({ email, onLogout, onProfileUpdated }) {
                     <strong>{employee.address || "Not provided"}</strong>
                   </div>
                 </div>
+              )}
+            </section>
+
+            <section className="panel document-panel">
+              <div className="directory-heading">
+                <div>
+                  <p className="panel-kicker">EMPLOYEE DOCUMENTS</p>
+                  <h2>My documents</h2>
+                  <p className="document-help-copy">
+                    Upload one Aadhaar card image only (JPG or PNG, up to 10 MB).
+                    Your administrator can review it and see the OCR text with the Aadhaar number masked.
+                  </p>
+                </div>
+                <label className="document-upload-button">
+                  <span>{uploadingDocument ? "Uploading…" : documents.some((item) => item.document_type === "aadhaar") ? "Aadhaar uploaded" : "Upload Aadhaar"}</span>
+                  <input
+                    type="file"
+                    accept=".jpg,.jpeg,.png,image/jpeg,image/png"
+                    onChange={uploadDocument}
+                    disabled={uploadingDocument || documents.some((item) => item.document_type === "aadhaar")}
+                  />
+                </label>
+              </div>
+
+              {documentError && (
+                <div className="alert" role="alert">{documentError}</div>
+              )}
+              {documentNotice && (
+                <div className="success-alert" role="status">
+                  {documentNotice}
+                </div>
+              )}
+
+              {documentsLoading ? (
+                <p className="document-empty-copy">Loading documents…</p>
+              ) : documents.length === 0 ? (
+                <p className="document-empty-copy">
+                  No Aadhaar card uploaded yet.
+                </p>
+              ) : (
+                <ul className="employee-document-list">
+                  {documents.map((documentFile) => (
+                    <li key={documentFile.id}>
+                      <div className="employee-document-info">
+                        <strong>{documentFile.document_type === "aadhaar" ? "Aadhaar card" : documentFile.filename}</strong>
+                        <small>
+                          {(documentFile.size_bytes / (1024 * 1024)).toFixed(2)} MB
+                          {" · "}
+                          {new Date(documentFile.uploaded_at).toLocaleDateString()}
+                        </small>
+                      </div>
+                      <div className="employee-document-actions">
+                        <button
+                          className="refresh-button"
+                          onClick={() => downloadDocument(documentFile)}
+                        >
+                          Download
+                        </button>
+                        <button
+                          className="delete-button"
+                          onClick={() => deleteDocument(documentFile)}
+                          disabled={busyDocumentId === documentFile.id}
+                        >
+                          {busyDocumentId === documentFile.id ? "Deleting…" : "Delete"}
+                        </button>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
               )}
             </section>
 

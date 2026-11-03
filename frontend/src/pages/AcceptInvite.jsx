@@ -3,11 +3,22 @@ import { apiRequest } from "../api";
 import Brand from "../components/Brand";
 
 export default function AcceptInvite({ token }) {
+  const [profile, setProfile] = useState({
+    name: "",
+    department: "",
+    contact_number: "",
+    address: "",
+  });
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
   const [complete, setComplete] = useState(false);
   const [busy, setBusy] = useState(false);
+
+  function handleProfileChange(event) {
+    const { name, value } = event.target;
+    setProfile((current) => ({ ...current, [name]: value }));
+  }
 
   async function submit(event) {
     event.preventDefault();
@@ -22,7 +33,15 @@ export default function AcceptInvite({ token }) {
     try {
       const result = await apiRequest("/auth/accept-invite", {
         method: "POST",
-        body: JSON.stringify({ token, password }),
+        body: JSON.stringify({
+          token,
+          ...profile,
+          name: profile.name.trim(),
+          department: profile.department.trim(),
+          contact_number: profile.contact_number.trim(),
+          address: profile.address.trim(),
+          password,
+        }),
       });
       setComplete(true);
       window.history.replaceState({}, "", "/login");
@@ -42,19 +61,19 @@ export default function AcceptInvite({ token }) {
       <main className="login-layout">
         <section className="login-welcome">
           <p className="eyebrow">EMPLOYEE MANAGEMENT</p>
-          <h1>Set up your account.</h1>
+          <h1>Complete your employee profile.</h1>
           <p className="welcome-copy">
-            Create a password to access your PeopleDesk employee workspace.
+            Enter your details and create a password to activate your PeopleDesk account.
           </p>
         </section>
         <section className="login-card">
           <div className="login-card-heading">
             <p className="panel-kicker">EMPLOYEE INVITATION</p>
-            <h2>{complete ? "Account ready" : "Choose your password"}</h2>
+            <h2>{complete ? "Account ready" : "Your account setup"}</h2>
             <p>
               {complete
                 ? "Your email address is your username. You can now sign in."
-                : "Use the email address where you received this invitation as your username."}
+                : "Fill in your profile, then create and confirm a password. The email where you received this invitation will be your username."}
             </p>
           </div>
 
@@ -77,6 +96,51 @@ export default function AcceptInvite({ token }) {
             </button>
           ) : (
             <form className="login-form" onSubmit={submit}>
+              <label>
+                <span>Full name</span>
+                <input
+                  name="name"
+                  value={profile.name}
+                  onChange={handleProfileChange}
+                  autoComplete="name"
+                  maxLength="100"
+                  required
+                />
+              </label>
+              <label>
+                <span>Department</span>
+                <input
+                  name="department"
+                  value={profile.department}
+                  onChange={handleProfileChange}
+                  maxLength="100"
+                  required
+                />
+              </label>
+              <label>
+                <span>Contact number</span>
+                <input
+                  name="contact_number"
+                  type="tel"
+                  value={profile.contact_number}
+                  onChange={handleProfileChange}
+                  autoComplete="tel"
+                  minLength="7"
+                  maxLength="25"
+                  required
+                />
+              </label>
+              <label>
+                <span>Address</span>
+                <input
+                  name="address"
+                  value={profile.address}
+                  onChange={handleProfileChange}
+                  autoComplete="street-address"
+                  maxLength="250"
+                  required
+                />
+              </label>
               <label>
                 <span>Create password</span>
                 <input
@@ -102,7 +166,7 @@ export default function AcceptInvite({ token }) {
                 />
               </label>
               <button className="primary-button login-submit" disabled={busy}>
-                {busy ? "Setting up…" : "Set password"}
+                {busy ? "Setting up…" : "Complete setup"}
                 {!busy && <span aria-hidden="true">→</span>}
               </button>
             </form>

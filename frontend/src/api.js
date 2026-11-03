@@ -37,3 +37,56 @@ export async function apiRequest(path, options = {}) {
 
   return data;
 }
+
+export async function uploadFile(path, file) {
+  const token = localStorage.getItem(TOKEN_KEY);
+  const headers = {
+    "Content-Type": file.type || "application/octet-stream",
+    "X-File-Name": encodeURIComponent(file.name),
+  };
+
+  if (token) {
+    headers.Authorization = "Bearer " + token;
+  }
+
+  const response = await fetch(API_URL + path, {
+    method: "POST",
+    headers,
+    body: file,
+  });
+  const data = await response.json().catch(() => null);
+
+  if (!response.ok) {
+    throw new Error(
+      typeof data?.detail === "string"
+        ? data.detail
+        : "The file could not be uploaded. Please try again."
+    );
+  }
+
+  return data;
+}
+
+export async function downloadFile(path, filename) {
+  const token = localStorage.getItem(TOKEN_KEY);
+  const headers = token ? { Authorization: "Bearer " + token } : {};
+  const response = await fetch(API_URL + path, { headers });
+
+  if (!response.ok) {
+    const data = await response.json().catch(() => null);
+    throw new Error(
+      typeof data?.detail === "string"
+        ? data.detail
+        : "The document could not be downloaded. Please try again."
+    );
+  }
+
+  const objectUrl = URL.createObjectURL(await response.blob());
+  const link = document.createElement("a");
+  link.href = objectUrl;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  window.setTimeout(() => URL.revokeObjectURL(objectUrl), 1000);
+}
