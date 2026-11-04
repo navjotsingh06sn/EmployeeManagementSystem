@@ -1,9 +1,10 @@
 import { useCallback, useEffect, useState } from "react";
 import { apiRequest } from "../api";
 import Brand from "../components/Brand";
+import ThemeToggle from "../components/ThemeToggle";
 import { initials } from "../components/helpers";
 
-export default function PendingRequests({ email, onLogout, onBack }) {
+export default function PendingRequests({ email, onLogout, onBack, onOpenSettings }) {
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
   const [busyId, setBusyId] = useState(null);
@@ -51,8 +52,12 @@ export default function PendingRequests({ email, onLogout, onBack }) {
       <header className="topbar">
         <Brand />
         <div className="topbar-right">
+          <ThemeToggle />
           <button className="docs-link requests-back-link" onClick={onBack}>
             ← Employee directory
+          </button>
+          <button className="refresh-button" type="button" onClick={onOpenSettings}>
+            Settings
           </button>
           <span className="user-badge">
             <span className="live-dot" /> Admin · {email}

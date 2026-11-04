@@ -7,4 +7,5 @@ pwdlib[argon2]
 PyJWT
 Pillow
 pytesseract
+PyMuPDF
 

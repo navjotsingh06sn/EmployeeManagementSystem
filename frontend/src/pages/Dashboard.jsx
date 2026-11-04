@@ -2,6 +2,8 @@ import { useEffect, useMemo, useState } from "react";
 import { apiRequest, downloadFile } from "../api";
 import Brand from "../components/Brand";
 import { initials } from "../components/helpers";
+import OcrDetails from "../components/OcrDetails";
+import ThemeToggle from "../components/ThemeToggle";
 
 const emptyForm = {
   name: "",
@@ -17,6 +19,7 @@ export default function AdminDashboard({
   onOpenRequests,
   onNavigateOverview,
   onNavigateEmployees,
+  onNavigateSettings,
 }) {
   const [employees, setEmployees] = useState([]);
   const [form, setForm] = useState(emptyForm);
@@ -27,14 +30,6 @@ export default function AdminDashboard({
   const [inviteNotice, setInviteNotice] = useState("");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [showAdminPasswords, setShowAdminPasswords] = useState(false);
-  const [adminPasswordFormOpen, setAdminPasswordFormOpen] = useState(false);
-  const [adminPasswordForm, setAdminPasswordForm] = useState({
-    current_password: "",
-    new_password: "",
-    confirm_password: "",
-  });
-  const [passwordNotice, setPasswordNotice] = useState("");
   const [documentEmployee, setDocumentEmployee] = useState(null);
   const [employeeDocuments, setEmployeeDocuments] = useState([]);
   const [documentsLoading, setDocumentsLoading] = useState(false);
@@ -57,6 +52,7 @@ export default function AdminDashboard({
     const refreshTimer = window.setInterval(loadEmployees, 30000);
     return () => window.clearInterval(refreshTimer);
   }, []);
+
 
   const pendingRequestCount = employees.filter(
     (employee) => employee.account_status === "pending"
@@ -259,65 +255,21 @@ export default function AdminDashboard({
     }
   }
 
-  function updateAdminPasswordForm(event) {
-    const { name, value } = event.target;
-    setAdminPasswordForm((current) => ({ ...current, [name]: value }));
-  }
-
-  async function changeAdminPassword(event) {
-    event.preventDefault();
-    setError("");
-    setPasswordNotice("");
-
-    if (
-      adminPasswordForm.new_password !==
-      adminPasswordForm.confirm_password
-    ) {
-      setError("The new passwords do not match.");
-      return;
-    }
-
-    if (
-      adminPasswordForm.current_password ===
-      adminPasswordForm.new_password
-    ) {
-      setError("Choose a new password different from your current one.");
-      return;
-    }
-
-    try {
-      const result = await apiRequest("/admin/me/password", {
-        method: "PUT",
-        body: JSON.stringify({
-          current_password: adminPasswordForm.current_password,
-          new_password: adminPasswordForm.new_password,
-        }),
-      });
-
-      setPasswordNotice(result.message);
-      setAdminPasswordForm({
-        current_password: "",
-        new_password: "",
-        confirm_password: "",
-      });
-      setShowAdminPasswords(false);
-      setAdminPasswordFormOpen(false);
-    } catch (err) {
-      setError(err.message || "Could not change the administrator password.");
-    }
-  }
-
   return (
     <div className="app-shell">
       <header className="topbar">
         <Brand />
         <div className="topbar-right">
+          <ThemeToggle />
           <nav className="admin-page-nav" aria-label="Admin pages">
             <button onClick={onNavigateOverview}>Overview</button>
             <button className="active" onClick={onNavigateEmployees}>
               Employees
             </button>
           </nav>
+          <button className="refresh-button" type="button" onClick={onNavigateSettings}>
+            Settings
+          </button>
           <span className="user-badge">
             <span className="live-dot" /> Admin · {email}
           </span>
@@ -335,15 +287,6 @@ export default function AdminDashboard({
               </span>
             )}
           </button>
-
-          <a
-            className="docs-link"
-            href="http://127.0.0.1:8000/docs"
-            target="_blank"
-            rel="noreferrer"
-          >
-            API docs <span className="docs-icon">↗</span>
-          </a>
 
           <button className="logout-button" onClick={onLogout}>
             Sign out
@@ -411,101 +354,6 @@ export default function AdminDashboard({
               <p>Admins can view, update, and remove all employee records.</p>
             </div>
           </article>
-        </section>
-
-        <section className="panel password-panel admin-password-panel">
-          <div className="directory-heading">
-            <div>
-              <p className="panel-kicker">ACCOUNT SECURITY</p>
-              <h2>Change administrator password</h2>
-              <p className="page-description">
-                Update the password for your admin account.
-              </p>
-            </div>
-
-            <button
-              className="refresh-button"
-              type="button"
-              onClick={() => {
-                setAdminPasswordFormOpen((open) => !open);
-                setAdminPasswordForm({
-                  current_password: "",
-                  new_password: "",
-                  confirm_password: "",
-                });
-                setShowAdminPasswords(false);
-                setPasswordNotice("");
-              }}
-            >
-              {adminPasswordFormOpen ? "Cancel" : "Change password"}
-            </button>
-          </div>
-
-          {passwordNotice && (
-            <div className="success-alert" role="status">
-              {passwordNotice}
-            </div>
-          )}
-
-          {adminPasswordFormOpen && (
-            <form
-              className="password-change-form"
-              onSubmit={changeAdminPassword}
-            >
-              <button
-                className="refresh-button"
-                type="button"
-                onClick={() =>
-                  setShowAdminPasswords((visible) => !visible)
-                }
-              >
-                {showAdminPasswords ? "Hide passwords" : "Show passwords"}
-              </button>
-            <label>
-              <span>Current password</span>
-              <input
-                type={showAdminPasswords ? "text" : "password"}
-                name="current_password"
-                value={adminPasswordForm.current_password}
-                onChange={updateAdminPasswordForm}
-                autoComplete="current-password"
-                required
-              />
-            </label>
-
-            <label>
-              <span>New password</span>
-              <input
-                type={showAdminPasswords ? "text" : "password"}
-                name="new_password"
-                value={adminPasswordForm.new_password}
-                onChange={updateAdminPasswordForm}
-                minLength="8"
-                maxLength="128"
-                autoComplete="new-password"
-                required
-              />
-            </label>
-
-            <label>
-              <span>Confirm new password</span>
-              <input
-                type={showAdminPasswords ? "text" : "password"}
-                name="confirm_password"
-                value={adminPasswordForm.confirm_password}
-                onChange={updateAdminPasswordForm}
-                minLength="8"
-                maxLength="128"
-                autoComplete="new-password"
-                required
-              />
-            </label>
-
-            <button className="primary-button" type="submit">
-              Update admin password
-            </button>
-            </form>
-          )}
         </section>
 
         <section className="workspace-grid">
@@ -862,19 +710,30 @@ export default function AdminDashboard({
                   {employeeDocuments.map((documentFile) => (
                     <li key={documentFile.id}>
                       <div className="employee-document-info">
-                        <strong>{documentFile.document_type === "aadhaar" ? "Aadhaar card" : documentFile.filename}</strong>
+                        <strong>
+                          {documentFile.document_type === "aadhaar"
+                            ? "Aadhaar card"
+                            : documentFile.document_type === "pan"
+                              ? "PAN card"
+                              : documentFile.document_type === "resume"
+                                ? "Resume"
+                                : documentFile.document_type === "document"
+                                  ? "Document"
+                                  : documentFile.filename}
+                        </strong>
                         <small>
                           {(documentFile.size_bytes / (1024 * 1024)).toFixed(2)} MB
                           {" · "}
                           {new Date(documentFile.uploaded_at).toLocaleDateString()}
                         </small>
-                        {documentFile.ocr_text && (
-                          <div className="aadhaar-ocr-result">
-                            <strong>OCR text · Aadhaar number masked</strong>
-                            <pre>{documentFile.ocr_text}</pre>
-                          </div>
-                        )}
                       </div>
+                      <OcrDetails
+                        text={documentFile.ocr_text}
+                        details={documentFile.ocr_details}
+                        documentType={documentFile.document_type}
+                        adminOnly
+                        fileName={documentFile.filename}
+                      />
                       <button
                         className="refresh-button"
                         onClick={() => downloadEmployeeDocument(documentFile)}

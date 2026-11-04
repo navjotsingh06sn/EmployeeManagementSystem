@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { apiRequest, saveToken } from "../api";
 import Brand from "../components/Brand";
+import ThemeToggle from "../components/ThemeToggle";
 
 export default function LoginScreen({ onLogin }) {
   const [email, setEmail] = useState("");
@@ -86,6 +87,7 @@ export default function LoginScreen({ onLogin }) {
     <div className="login-page">
       <div className="login-brand">
         <Brand />
+        <ThemeToggle />
       </div>
 
       <main className="login-layout">

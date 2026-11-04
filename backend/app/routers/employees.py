@@ -22,7 +22,7 @@ from backend.app.schemas import (
     PasswordChangeRequest,
     PasswordSet,
 )
-from backend.app.ocr_service import extract_masked_aadhaar_text
+from backend.app.ocr_service import extract_document_text
 from backend.app.security import (
     get_current_user,
     hash_password,
@@ -31,6 +31,7 @@ from backend.app.security import (
 )
 from backend.app.services import (
     admin_employee_documents,
+    detect_document_type,
     document_download,
     employee_account_status,
     employee_documents,
@@ -301,11 +302,22 @@ async def upload_my_document(
     raw_filename = unquote(request.headers.get("x-file-name", ""))
     filename = raw_filename.replace("\\", "/").rsplit("/", 1)[-1].strip()
     extension = os.path.splitext(filename)[1].lower()
-    if not filename or len(filename) > 180 or extension not in DOCUMENT_SIGNATURES:
+    document_type = request.headers.get("x-document-type", "aadhaar").strip().lower()
+    accepted_extensions = {".jpg", ".jpeg", ".png"}
+    if document_type in {"resume", "auto"}:
+        accepted_extensions.add(".pdf")
+    if (
+        not filename
+        or len(filename) > 180
+        or extension not in accepted_extensions
+        or extension not in DOCUMENT_SIGNATURES
+    ):
         raise HTTPException(
             status_code=status.HTTP_415_UNSUPPORTED_MEDIA_TYPE,
-            detail="Only JPG, JPEG, or PNG Aadhaar card images are accepted.",
+            detail="Upload a JPG, PNG, or PDF document (up to 10 MB).",
         )
+    if document_type not in {"aadhaar", "pan", "resume", "auto"}:
+        raise HTTPException(status_code=400, detail="Choose auto-detect or a supported document type.")
 
     chunks = []
     total_size = 0
@@ -329,18 +341,22 @@ async def upload_my_document(
             detail="The file contents do not match the selected document type.",
         )
 
+    ocr_mode = "resume" if extension == ".pdf" or document_type == "resume" else (
+        "aadhaar" if document_type == "aadhaar" else "auto"
+    )
+    ocr_text = extract_document_text(content, document_type=ocr_mode)
+    stored_document_type = detect_document_type(ocr_text, document_type)
+
     if db["employee_documents.files"].find_one(
         {
             "metadata.employee_id": user["employee_id"],
-            "metadata.document_type": "aadhaar",
+            "metadata.document_type": stored_document_type,
         }
     ):
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
-            detail="An Aadhaar card is already uploaded. Delete it before uploading a replacement.",
+            detail=f"A {stored_document_type} is already uploaded. Delete it before uploading another.",
         )
-
-    masked_ocr_text = extract_masked_aadhaar_text(content)
 
     document_id = documents_bucket.upload_from_stream(
         filename,
@@ -349,8 +365,8 @@ async def upload_my_document(
             "employee_id": user["employee_id"],
             "uploaded_by": user["email"],
             "content_type": content_type,
-            "document_type": "aadhaar",
-            "ocr_text": masked_ocr_text,
+            "document_type": stored_document_type,
+            "ocr_text": ocr_text,
         },
     )
     document = documents_bucket.open_download_stream(document_id)

@@ -1,0 +1,18 @@
+services:
+  - type: web
+    name: employeemanager-api
+    runtime: python
+    buildCommand: apt-get update && apt-get install -y tesseract-ocr && pip install -r requirements.txt
+    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /
+    envVars:
+      - key: MONGODB_URL
+        sync: false
+      - key: SECRET_KEY
+        generateValue: true
+      - key: ADMIN_EMAIL
+        sync: false
+      - key: ADMIN_PASSWORD
+        sync: false
+      - key: DATABASE_NAME
+        value: employee_db

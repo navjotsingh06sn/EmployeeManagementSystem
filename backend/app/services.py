@@ -1,6 +1,7 @@
 """Shared employee, invitation, and document operations."""
 
 import logging
+import re
 import smtplib
 from datetime import datetime, timedelta, timezone
 from email.message import EmailMessage
@@ -11,6 +12,7 @@ from bson import ObjectId
 from fastapi import HTTPException, Response, status
 from pymongo import DESCENDING, ReturnDocument
 
+from backend.app.ocr_service import extract_document_text
 from backend.app.config import (
     FRONTEND_URL,
     SECRET_KEY,
@@ -74,6 +76,25 @@ def employee_documents(employee_id: str) -> list[dict]:
     ]
 
 
+def document_ocr_text(document) -> str:
+    metadata = document.metadata or {}
+    text = metadata.get("ocr_text", "")
+    if metadata.get("document_type") != "aadhaar" or "XXXX" not in text.upper():
+        return text
+
+    # Refresh OCR for cards uploaded before unmasked details were enabled.
+    try:
+        image = documents_bucket.open_download_stream(document._id)
+        text = extract_document_text(image.read(), document_type="aadhaar")
+    except HTTPException:
+        return text
+    db["employee_documents.files"].update_one(
+        {"_id": document._id},
+        {"$set": {"metadata.ocr_text": text}},
+    )
+    return text
+
+
 def admin_employee_documents(employee_id: str) -> list[dict]:
     documents = []
     cursor = documents_bucket.find(
@@ -82,10 +103,99 @@ def admin_employee_documents(employee_id: str) -> list[dict]:
 
     for document in cursor:
         document_data = public_document(document)
-        document_data["ocr_text"] = (document.metadata or {}).get("ocr_text", "")
+        ocr_text = document_ocr_text(document)
+        document_data["ocr_text"] = ocr_text
+        detected_type = detect_document_type(ocr_text, document_data["document_type"])
+        document_data["document_type"] = detected_type
+        document_data["ocr_details"] = extract_document_details(ocr_text, detected_type)
         documents.append(document_data)
 
     return documents
+
+
+def detect_document_type(text: str, fallback: str = "document") -> str:
+    """Identify common Indian documents with local OCR text patterns."""
+    normalized = text.upper()
+    pan_number = re.search(r"\b[A-Z]{5}\s?\d{4}\s?[A-Z]\b", normalized)
+    if (
+        pan_number
+        or "PERMANENT ACCOUNT NUMBER" in normalized
+        or "INCOME TAX DEPARTMENT" in normalized
+    ):
+        return "pan"
+    has_aadhaar_number = bool(re.search(r"(?<!\d)(?:\d[\s-]*){11}\d(?!\d)", text))
+    has_aadhaar_label = any(
+        label in normalized
+        for label in ("AADHAAR", "UIDAI", "UNIQUE IDENTIFICATION")
+    )
+    if has_aadhaar_label or (has_aadhaar_number and "GOVERNMENT OF INDIA" in normalized):
+        return "aadhaar"
+    if fallback in {"aadhaar", "pan", "resume"}:
+        return fallback
+    is_resume = any(
+        word in normalized
+        for word in ("RESUME", "CURRICULUM VITAE", "EXPERIENCE", "EDUCATION")
+    )
+    return "resume" if is_resume else "document"
+
+
+def extract_document_details(text: str, document_type: str) -> dict[str, str]:
+    """Return only fields visibly supported by the OCR text."""
+    lines = [line.strip() for line in text.splitlines() if line.strip()]
+    normalized = "\n".join(lines)
+    details: dict[str, str] = {}
+
+    def labeled_value(pattern: str) -> str:
+        match = re.search(pattern + r"\s*[:\-]?\s*([^\n]+)?", normalized, re.I)
+        if match and match.group(1):
+            return match.group(1).strip(" :-")
+        if match:
+            following = normalized[match.end():].splitlines()
+            if following:
+                return following[0].strip(" :-")
+        return ""
+
+    name = labeled_value(r"\bname\b")
+    father = labeled_value(r"(?:father(?:'s)?(?:\s+name)?|s/o|d/o|w/o|c/o|care\s+of)")
+    address = labeled_value(r"\baddress\b")
+    aadhaar_match = re.search(
+        r"(?<!\d)(?:\d[\s-]*){11}\d(?!\d)", normalized
+    ) if document_type == "aadhaar" else None
+    pan_match = (
+        re.search(r"\b[A-Z]{5}\s?\d{4}\s?[A-Z]\b", normalized, re.I)
+        if document_type == "pan"
+        else None
+    )
+    email_match = re.search(
+        r"\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b", normalized, re.I
+    )
+    phone_source = normalized
+    if aadhaar_match:
+        phone_source = phone_source.replace(aadhaar_match.group(0), " ")
+    phone_match = re.search(
+        r"(?<!\d)(?:\+91[\s-]?)?[6-9](?:[\s-]?\d){9}(?!\d)",
+        phone_source,
+    )
+
+    candidates = {
+        "name": name,
+        "father_name": father,
+        "address": address,
+        "phone": phone_match.group(0).strip() if phone_match else "",
+        "date_of_birth": labeled_value(r"(?:date\s+of\s+birth|dob)") or labeled_value(r"\byob\b"),
+        "gender": labeled_value(r"\b(?:gender|sex)\b"),
+        "aadhaar_number": (
+            " ".join(aadhaar_match.group(0).replace("-", " ").split())
+            if aadhaar_match
+            else ""
+        ),
+        "pan_number": re.sub(r"\s+", "", pan_match.group(0)).upper() if pan_match else "",
+        "email": email_match.group(0) if email_match else "",
+        "education": labeled_value(r"\b(?:education|qualification|degree)\b"),
+        "experience": labeled_value(r"\b(?:experience|work experience)\b"),
+        "skills": labeled_value(r"\bskills?\b"),
+    }
+    return {key: value for key, value in candidates.items() if value}
 
 
 def document_download(document_id: str, employee_id: str) -> Response:

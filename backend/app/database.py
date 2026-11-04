@@ -18,4 +18,5 @@ DOCUMENT_SIGNATURES = {
     ".png": ("image/png", lambda content: content.startswith(b"\x89PNG\r\n\x1a\n")),
     ".jpg": ("image/jpeg", lambda content: content.startswith(b"\xff\xd8\xff")),
     ".jpeg": ("image/jpeg", lambda content: content.startswith(b"\xff\xd8\xff")),
+    ".pdf": ("application/pdf", lambda content: content.startswith(b"%PDF-")),
 }

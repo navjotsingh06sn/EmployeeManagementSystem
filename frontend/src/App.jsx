@@ -6,6 +6,8 @@ import Dashboard from "./pages/Dashboard";
 import AcceptInvite from "./pages/AcceptInvite";
 import PendingRequests from "./pages/PendingRequests";
 import AdminOverview from "./pages/AdminOverview";
+import EmployeeDocuments from "./pages/EmployeeDocuments";
+import AccountSettings from "./pages/AccountSettings";
 
 function navigate(path, replace = false) {
   const method = replace ? "replaceState" : "pushState";
@@ -79,10 +81,12 @@ export default function App() {
         "/admin/directory",
         "/admin/employees",
         "/admin/requests",
+        "/admin/settings",
       ];
+      const employeePaths = ["/employee", "/employee/documents", "/employee/settings"];
       const allowedPath = account.role === "admin"
         ? adminPaths.includes(requestedPath) ? requestedPath : "/admin"
-        : "/employee";
+        : employeePaths.includes(requestedPath) ? requestedPath : "/employee";
       const requestedRole = requestedPath === "/admin" || requestedPath.startsWith("/admin/")
         ? "admin"
         : requestedPath === "/employee" || requestedPath.startsWith("/employee/")
@@ -145,24 +149,63 @@ export default function App() {
   }
 
   if (account.role === "employee") {
+    if (pathname.replace(/\/+$/, "") === "/employee/settings") {
+      return (
+        <AccountSettings
+          role="employee"
+          email={account.email}
+          onBack={() => navigate("/employee")}
+          onLogout={onLogout}
+          onAccountUpdated={(updated) =>
+            setAccount((current) => ({ ...current, email: updated.email }))
+          }
+        />
+      );
+    }
+
+    if (pathname.replace(/\/+$/, "") === "/employee/documents") {
+      return (
+        <EmployeeDocuments
+          email={account.email}
+          onBack={() => navigate("/employee")}
+          onOpenSettings={() => navigate("/employee/settings")}
+          onLogout={onLogout}
+        />
+      );
+    }
+
     return (
       <EmployeeDashboard
         email={account.email}
         onLogout={onLogout}
-        onProfileUpdated={(updated) =>
-          setAccount((current) => ({ ...current, email: updated.email }))
-        }
+        onOpenSettings={() => navigate("/employee/settings")}
+        onOpenDocuments={() => navigate("/employee/documents")}
       />
     );
   }
 
   if (account.role === "admin") {
+    if (pathname.replace(/\/+$/, "") === "/admin/settings") {
+      return (
+        <AccountSettings
+          role="admin"
+          email={account.email}
+          onBack={() => navigate("/admin/overview")}
+          onLogout={onLogout}
+          onAccountUpdated={(updated) =>
+            setAccount((current) => ({ ...current, email: updated.email }))
+          }
+        />
+      );
+    }
+
     if (pathname.replace(/\/+$/, "") === "/admin/requests") {
       return (
         <PendingRequests
           email={account.email}
           onLogout={onLogout}
           onBack={() => navigate("/admin/directory")}
+          onOpenSettings={() => navigate("/admin/settings")}
         />
       );
     }
@@ -175,6 +218,7 @@ export default function App() {
           onOpenRequests={() => navigate("/admin/requests")}
           onNavigateOverview={() => navigate("/admin/overview")}
           onNavigateEmployees={() => navigate("/admin/directory")}
+          onNavigateSettings={() => navigate("/admin/settings")}
         />
       );
     }
@@ -186,6 +230,7 @@ export default function App() {
         onOpenRequests={() => navigate("/admin/requests")}
         onNavigateEmployees={() => navigate("/admin/directory")}
         onNavigateOverview={() => navigate("/admin/overview")}
+        onNavigateSettings={() => navigate("/admin/settings")}
       />
     );
   }

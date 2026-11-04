@@ -3310,8 +3310,9 @@ a:focus-visible {
 
 .employee-document-list > li {
   display: flex;
+  flex-wrap: wrap;
   min-width: 0;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
   gap: 16px;
   padding: 13px 14px;
@@ -3338,30 +3339,269 @@ a:focus-visible {
 }
 
 .aadhaar-ocr-result {
-  display: grid;
-  gap: 6px;
+  flex: 1 1 100%;
   max-width: 100%;
   margin-top: 8px;
-  padding: 10px 12px;
-  border: 1px solid #2c3d59;
-  border-radius: 8px;
-  background: #0d1523;
 }
 
-.aadhaar-ocr-result strong {
-  color: #aebcf5;
+.aadhaar-preview-card {
+  position: relative;
+  display: grid;
+  gap: 14px;
+  overflow: hidden;
+  max-width: 760px;
+  padding: 17px 19px 18px;
+  border: 1px solid #deded8;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #fffefa, #f1f3f2);
+  box-shadow: 0 8px 20px rgba(3, 8, 18, 0.18);
+  color: #1e2a38;
+}
+
+.document-template-pan .aadhaar-preview-card {
+  background: linear-gradient(145deg, #fff, #f3f5f8);
+}
+
+.document-template-pan .aadhaar-card-topline {
+  background: linear-gradient(90deg, #294a6e, #74a3bc, #d2b46a);
+}
+
+.document-template-pan .aadhaar-card-mark {
+  border-radius: 8px;
+  color: #294a6e;
+  font-size: 8px;
+}
+
+.document-template-pan .aadhaar-card-chip {
+  background: #e7edf3;
+  color: #38536d !important;
+}
+
+.document-template-resume .aadhaar-preview-card {
+  max-width: 860px;
+  background: linear-gradient(145deg, #fff, #f4f5fa);
+}
+
+.document-template-resume .aadhaar-card-topline {
+  background: linear-gradient(90deg, #4452a8, #6978d1);
+}
+
+.document-template-resume .aadhaar-card-mark {
+  border-radius: 9px;
+  background: #e9ebfa;
+  color: #4452a8;
+}
+
+.document-template-resume .aadhaar-card-chip {
+  background: #e8eafd;
+  color: #4f5dac !important;
+}
+
+.document-template-document .aadhaar-card-topline {
+  background: linear-gradient(90deg, #536275, #94a3b8);
+}
+
+.aadhaar-card-topline {
+  position: absolute;
+  inset: 0 0 auto;
+  height: 4px;
+  background: linear-gradient(90deg, #e98239 0 34%, #e9e9e1 34% 67%, #3b9b69 67%);
+}
+
+.aadhaar-card-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.aadhaar-card-mark {
+  display: grid;
+  width: 36px;
+  height: 36px;
+  place-items: center;
+  border: 1px solid #d5d9d8;
+  border-radius: 50%;
+  color: #3c5963;
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.aadhaar-card-header > div:nth-child(2) {
+  display: grid;
+  gap: 3px;
+}
+
+.aadhaar-card-header strong {
+  color: #283744;
+  font-size: 12px;
+}
+
+.aadhaar-card-header span {
+  color: #66747b;
   font-size: 10px;
 }
 
-.aadhaar-ocr-result pre {
-  max-width: 100%;
+.aadhaar-card-chip {
+  margin-left: auto;
+  padding: 5px 8px;
+  border-radius: 20px;
+  background: #e8eeeb;
+  color: #53665d !important;
+  font-size: 8px !important;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+}
+
+.aadhaar-number-block {
+  display: grid;
+  gap: 5px;
+  padding: 12px 14px;
+  border: 1px solid #e0e4e1;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.76);
+}
+
+.aadhaar-number-block span {
+  color: #77838a;
+  font-size: 10px;
+}
+
+.aadhaar-number-block strong {
+  color: #1f3341;
+  font-size: clamp(17px, 3vw, 22px);
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  font-variant-numeric: tabular-nums;
+}
+
+.aadhaar-preview-card .ocr-details-heading {
+  padding-top: 1px;
+}
+
+.aadhaar-preview-card .ocr-details-heading strong {
+  color: #344650;
+  font-size: 12px;
+}
+
+.aadhaar-preview-card .ocr-details-heading small {
+  color: #7b878c;
+  font-size: 10px;
+}
+
+.ocr-details-heading {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+}
+
+.ocr-details-icon {
+  display: grid;
+  width: 34px;
+  height: 34px;
+  place-items: center;
+  border: 1px solid #514e93;
+  border-radius: 10px;
+  background: #262547;
+  color: #d4d1ff;
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.ocr-details-heading > div {
+  display: grid;
+  gap: 3px;
+}
+
+.ocr-details-heading strong {
+  color: #e7eaff;
+  font-size: 12px;
+}
+
+.ocr-details-heading small {
+  color: #91a0b8;
+  font-size: 10px;
+}
+
+.ocr-details-lines {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
   margin: 0;
-  color: #c8d2e2;
-  font: inherit;
-  font-size: 11px;
-  line-height: 1.5;
+}
+
+.ocr-detail-row {
+  display: grid;
+  min-width: 0;
+  gap: 5px;
+  padding: 10px 12px;
+  border: 1px solid #e1e5e2;
+  border-radius: 9px;
+  background: rgba(255, 255, 255, 0.76);
+}
+
+.ocr-detail-row dt {
+  color: #718087;
+  font-size: 10px;
+  font-weight: 650;
+}
+
+.ocr-detail-row dd {
+  min-width: 0;
+  margin: 0;
+  color: #2c3b44;
+  font-size: 12px;
+  line-height: 1.55;
   overflow-wrap: anywhere;
-  white-space: pre-wrap;
+}
+
+.ocr-number-note {
+  margin: 0;
+  color: #77838a;
+  font-size: 11px;
+}
+
+.ocr-admin-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding-top: 3px;
+}
+
+.ocr-detail-row.unlabelled {
+  grid-column: 1 / -1;
+}
+
+#account-settings {
+  scroll-margin-top: 24px;
+}
+
+@media (max-width: 620px) {
+  .ocr-details-lines {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .document-upload-options {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .document-upload-option {
+    padding: 14px;
+    flex-wrap: wrap;
+  }
+
+  .document-option-actions {
+    width: 100%;
+    margin-left: 51px;
+    justify-content: flex-start;
+  }
+
+  .camera-scan-modal {
+    padding: 18px;
+  }
+
+  .camera-preview-wrap {
+    min-height: 210px;
+  }
 }
 
 .employee-document-actions {
@@ -3392,6 +3632,294 @@ a:focus-visible {
 .employee-document-actions .delete-button:disabled {
   cursor: wait;
   opacity: 0.65;
+}
+
+.employee-documents-page > .panel {
+  padding: 24px 26px;
+}
+
+.document-upload-options {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 14px;
+}
+
+.document-upload-option {
+  position: relative;
+  display: flex;
+  min-width: 0;
+  align-items: flex-start;
+  gap: 13px;
+  padding: 18px;
+  border: 1px solid #34425e;
+  border-radius: 13px;
+  background: linear-gradient(145deg, #151f32, #101827);
+  cursor: default;
+  transition: border-color 150ms ease, transform 150ms ease, background 150ms ease;
+}
+
+.document-upload-option.is-complete {
+  cursor: default;
+  opacity: 0.78;
+}
+
+.document-upload-option input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  clip-path: inset(50%);
+}
+
+.document-option-icon {
+  display: grid;
+  width: 38px;
+  height: 38px;
+  flex: 0 0 38px;
+  place-items: center;
+  border: 1px solid #514e93;
+  border-radius: 11px;
+  background: #262547;
+  color: #d4d1ff;
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.document-option-icon.resume-icon {
+  border-color: #3e6574;
+  background: #1c3540;
+  color: #c5edf4;
+}
+
+.document-option-copy {
+  display: grid;
+  min-width: 0;
+  gap: 5px;
+}
+
+.document-option-copy strong {
+  color: #edf0f8;
+  font-size: 13px;
+}
+
+.document-option-copy small,
+.document-option-copy em {
+  color: #99a6ba;
+  font-size: 10px;
+  font-style: normal;
+  line-height: 1.45;
+}
+
+.document-option-action {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-self: center;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+  padding: 8px 10px;
+  border: 1px solid #5d56b5;
+  border-radius: 8px;
+  background: #39346f;
+  color: #eceaff;
+  font-size: 10px;
+  font-weight: 750;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.document-option-actions {
+  display: flex;
+  flex: 0 0 auto;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 7px;
+  margin-left: auto;
+}
+
+.document-option-actions button:disabled,
+.document-option-actions label[aria-disabled="true"] {
+  cursor: not-allowed;
+  opacity: 0.65;
+}
+
+.document-option-actions input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  clip-path: inset(50%);
+}
+
+.admin-ocr-fields {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.admin-ocr-raw {
+  border: 1px solid #dfe4e2;
+  border-radius: 9px;
+  background: rgba(255, 255, 255, 0.76);
+  color: #46545b;
+  font-size: 11px;
+}
+
+.admin-ocr-raw summary {
+  padding: 10px 12px;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.admin-ocr-raw pre {
+  max-height: 260px;
+  overflow: auto;
+  margin: 0;
+  padding: 0 12px 12px;
+  color: #2c3b44;
+  font: inherit;
+  line-height: 1.55;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.camera-scan-backdrop {
+  position: fixed;
+  z-index: 1000;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  overflow-y: auto;
+  padding: 22px;
+  background: rgba(5, 9, 18, 0.82);
+  backdrop-filter: blur(6px);
+}
+
+.camera-scan-modal {
+  width: min(720px, 100%);
+  padding: 24px;
+  border: 1px solid #394762;
+  border-radius: 16px;
+  background: #121b2c;
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.45);
+}
+
+.camera-scan-heading,
+.camera-scan-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.camera-scan-heading h2 {
+  margin: 3px 0 0;
+  color: #f1f3fb;
+  font-size: 20px;
+}
+
+.camera-close {
+  width: 38px;
+  height: 38px;
+  border: 1px solid #394762;
+  border-radius: 10px;
+  background: #1b263b;
+  color: #dce3ef;
+  font-size: 24px;
+  cursor: pointer;
+}
+
+.camera-scan-help {
+  margin: 12px 0 16px;
+  color: #a6b2c5;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.camera-preview-wrap {
+  position: relative;
+  display: grid;
+  min-height: 260px;
+  place-items: center;
+  overflow: hidden;
+  border: 1px solid #3b4961;
+  border-radius: 12px;
+  background: #05080e;
+}
+
+.camera-preview-wrap video {
+  display: block;
+  width: 100%;
+  max-height: min(58vh, 520px);
+  object-fit: contain;
+}
+
+.camera-document-guide {
+  position: absolute;
+  width: min(82%, 600px);
+  aspect-ratio: 1.586;
+  border: 2px solid #b8b2ff;
+  border-radius: 10px;
+  box-shadow: 0 0 0 999px rgba(3, 6, 12, 0.28);
+  pointer-events: none;
+}
+
+.resume-guide .camera-document-guide {
+  width: min(60%, 380px);
+  height: 82%;
+  aspect-ratio: auto;
+  border-radius: 7px;
+}
+
+.auto-guide .camera-document-guide {
+  width: 86%;
+  height: 86%;
+  aspect-ratio: auto;
+}
+
+.camera-scan-error {
+  margin: 12px 0 0;
+  color: #ffb4bb;
+  font-size: 12px;
+}
+
+.camera-scan-actions {
+  justify-content: flex-end;
+  margin-top: 16px;
+}
+
+.document-upload-option.is-complete .document-option-action {
+  border-color: #355846;
+  background: #1b3429;
+  color: #c6e4d2;
+}
+
+.aadhaar-photo-preview {
+  display: grid;
+  flex: 1 1 100%;
+  justify-items: start;
+  gap: 8px;
+  padding: 14px;
+  border: 1px solid #34425e;
+  border-radius: 12px;
+  background: #0d1523;
+}
+
+.aadhaar-photo-preview img {
+  display: block;
+  width: auto;
+  max-width: min(100%, 560px);
+  max-height: 560px;
+  border-radius: 8px;
+  object-fit: contain;
+  background: #fff;
+}
+
+.aadhaar-photo-preview p {
+  margin: 0;
+  color: #91a0b8;
+  font-size: 10px;
 }
 
 .document-review-modal {
@@ -3714,5 +4242,790 @@ a:focus-visible {
 
   .admin-dashboard .results-label {
     align-self: flex-end;
+  }
+}
+
+/* Final login spacing pass */
+.login-page {
+  min-height: 100vh;
+  min-height: 100svh;
+}
+
+.login-page .login-brand {
+  width: min(1120px, calc(100% - 48px));
+  padding: 22px 0 12px;
+}
+
+.login-page .login-layout {
+  width: min(1120px, calc(100% - 48px));
+  grid-template-columns: minmax(0, 1fr) minmax(360px, 420px);
+  align-items: center;
+  gap: clamp(28px, 4vw, 56px);
+  margin: 10px auto 34px;
+}
+
+.login-page .login-welcome {
+  min-height: 500px;
+  padding: clamp(34px, 4vw, 52px);
+  border-radius: 24px;
+}
+
+.login-page .login-welcome h1 {
+  margin: 36px 0 12px;
+  font-size: clamp(42px, 5vw, 60px);
+}
+
+.login-page .login-card {
+  width: 100%;
+  padding: clamp(28px, 3vw, 36px);
+  border-radius: 20px;
+}
+
+.login-page .login-card-heading > p:last-child {
+  margin-bottom: 18px;
+}
+
+.login-page .auth-mode-tabs {
+  margin: 16px 0 18px;
+}
+
+.login-page .login-form {
+  gap: 15px;
+  margin-top: 18px;
+}
+
+.login-page .login-form input {
+  min-width: 0;
+  width: 100%;
+}
+
+@media (max-width: 900px) {
+  .login-page .login-layout {
+    grid-template-columns: minmax(0, 1fr) minmax(340px, 390px);
+    gap: 24px;
+  }
+
+  .login-page .login-welcome {
+    min-height: 460px;
+  }
+}
+
+@media (max-width: 760px) {
+  .login-page .login-layout {
+    width: min(560px, calc(100% - 36px));
+    grid-template-columns: minmax(0, 1fr);
+    gap: 16px;
+    margin-top: 8px;
+  }
+
+  .login-page .login-welcome {
+    min-height: 0;
+    padding: 26px;
+    border-radius: 19px;
+  }
+
+  .login-page .login-welcome h1 {
+    margin: 18px 0 8px;
+    font-size: 34px;
+  }
+}
+
+@media (max-width: 620px) {
+  .login-page .login-brand {
+    width: calc(100% - 32px);
+    padding: 16px 0 9px;
+  }
+
+  .login-page .login-layout {
+    width: calc(100% - 32px);
+    gap: 12px;
+    margin: 7px auto 22px;
+  }
+
+  .login-page .login-welcome {
+    padding: 21px;
+    border-radius: 16px;
+  }
+
+  .login-page .login-welcome h1 {
+    margin: 15px 0 7px;
+    font-size: 30px;
+  }
+
+  .login-page .login-card {
+    padding: 23px 20px;
+    border-radius: 16px;
+  }
+
+  .login-page .login-form {
+    gap: 14px;
+  }
+}
+
+/* Small, consistent motion for interactive controls */
+button,
+a,
+[role="button"],
+[role="tab"] {
+  transition:
+    transform 160ms ease,
+    box-shadow 160ms ease,
+    border-color 160ms ease,
+    background-color 160ms ease,
+    color 160ms ease;
+}
+
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  button:enabled:hover,
+  a:hover,
+  [role="button"]:hover,
+  [role="tab"]:hover {
+    transform: translateY(-1px);
+  }
+
+  button:enabled:active,
+  a:active,
+  [role="button"]:active,
+  [role="tab"]:active {
+    transform: translateY(0) scale(0.985);
+  }
+
+  .employee-document-list > li,
+  .profile-field {
+    transition: transform 180ms ease, border-color 180ms ease, box-shadow 180ms ease;
+  }
+
+  .employee-document-list > li:hover,
+  .profile-field:hover {
+    transform: translateY(-2px);
+    border-color: #4a5572;
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.16);
+  }
+
+  .document-upload-option:not(.is-complete) {
+    transition: transform 180ms ease, border-color 180ms ease, box-shadow 180ms ease;
+  }
+
+  .document-upload-option:not(.is-complete):hover {
+    transform: translateY(-2px);
+    border-color: #746cda;
+    box-shadow: 0 12px 26px rgba(0, 0, 0, 0.18);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  button,
+  a,
+  [role="button"],
+  [role="tab"],
+  .summary-card,
+  .employee-document-list > li,
+  .profile-field,
+  .document-upload-option {
+    scroll-behavior: auto;
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
+}
+
+/* Shared dark navigation theme */
+.app-shell .topbar {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  height: 72px;
+  padding-inline: clamp(16px, 4vw, 64px);
+  border-bottom: 1px solid rgba(138, 151, 181, 0.16);
+  background: rgba(10, 16, 29, 0.88);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.24);
+  backdrop-filter: blur(18px) saturate(140%);
+}
+
+.app-shell .brand {
+  flex: 0 0 auto;
+}
+
+.app-shell .brand-mark {
+  border: 1px solid rgba(191, 185, 255, 0.28);
+  background: linear-gradient(145deg, #8178f2, #5549c9);
+  box-shadow: 0 7px 20px rgba(94, 82, 211, 0.32);
+}
+
+.app-shell .topbar-right {
+  min-width: 0;
+  gap: clamp(7px, 1.2vw, 16px);
+}
+
+.app-shell .admin-page-nav {
+  padding: 4px;
+  border: 1px solid rgba(141, 150, 179, 0.18);
+  border-radius: 12px;
+  background: rgba(17, 26, 44, 0.78);
+  box-shadow: inset 0 1px rgba(255, 255, 255, 0.025);
+}
+
+.app-shell .admin-page-nav button {
+  min-height: 34px;
+  padding-inline: 13px;
+  border-radius: 9px;
+  color: #9ba8bd;
+  transition: background 170ms ease, color 170ms ease, box-shadow 170ms ease;
+}
+
+.app-shell .admin-page-nav button:hover:not(.active) {
+  background: rgba(255, 255, 255, 0.045);
+  color: #e3e7f2;
+}
+
+.app-shell .admin-page-nav button.active {
+  background: linear-gradient(135deg, rgba(113, 103, 220, 0.3), rgba(80, 75, 151, 0.26));
+  color: #e7e5ff;
+  box-shadow: inset 0 0 0 1px rgba(158, 149, 255, 0.18), 0 3px 10px rgba(0, 0, 0, 0.16);
+}
+
+.app-shell .user-badge {
+  max-width: 230px;
+  padding: 8px 11px;
+  border: 1px solid rgba(141, 150, 179, 0.17);
+  border-radius: 999px;
+  background: rgba(19, 29, 48, 0.72);
+  color: #bbc5d6;
+}
+
+.app-shell .user-badge .live-dot {
+  flex: 0 0 7px;
+}
+
+.app-shell .topbar .refresh-button,
+.app-shell .topbar .logout-button {
+  min-height: 36px;
+  padding-inline: 13px;
+  border-color: rgba(141, 150, 179, 0.2);
+  border-radius: 10px;
+  background: rgba(23, 33, 52, 0.84);
+  color: #c8d1e0;
+}
+
+.app-shell .topbar .refresh-button:hover:not(:disabled),
+.app-shell .topbar .logout-button:hover:not(:disabled) {
+  border-color: rgba(157, 147, 255, 0.48);
+  background: rgba(49, 46, 88, 0.9);
+  color: #fff;
+}
+
+.app-shell .topbar .request-notification {
+  min-height: 36px;
+  border-radius: 10px;
+  box-shadow: none;
+}
+
+@media (max-width: 760px) {
+  .app-shell .topbar {
+    height: 66px;
+    padding-inline: 16px;
+  }
+
+  .app-shell .topbar-right {
+    gap: 7px;
+  }
+
+  .app-shell .admin-page-nav {
+    gap: 2px;
+  }
+
+  .app-shell .admin-page-nav button {
+    min-height: 32px;
+    padding-inline: 9px;
+    font-size: 11px;
+  }
+}
+
+@media (max-width: 520px) {
+  .app-shell .topbar {
+    height: auto;
+    min-height: 64px;
+    padding: 10px 13px;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .app-shell .brand-mark {
+    width: 36px;
+    height: 36px;
+  }
+
+  .app-shell .brand-copy strong {
+    font-size: 14px;
+  }
+
+  .app-shell .topbar-right {
+    width: 100%;
+    flex: 1 1 100%;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 6px;
+  }
+
+  .app-shell .topbar-right .user-badge {
+    display: none;
+  }
+
+  .app-shell .admin-page-nav button {
+    padding-inline: 7px;
+    font-size: 10px;
+  }
+
+  .app-shell .topbar .refresh-button,
+  .app-shell .topbar .logout-button,
+  .app-shell .topbar .request-notification {
+    min-height: 32px;
+    padding-inline: 9px;
+    font-size: 10px;
+  }
+}
+
+.theme-toggle {
+  display: inline-grid;
+  width: 38px;
+  height: 38px;
+  flex: 0 0 38px;
+  place-items: center;
+  padding: 0;
+  border: 1px solid rgba(141, 150, 179, 0.22);
+  border-radius: 11px;
+  background: rgba(23, 33, 52, 0.84);
+  color: #e2c981;
+  cursor: pointer;
+}
+
+.theme-toggle:hover {
+  border-color: rgba(157, 147, 255, 0.5);
+  background: rgba(49, 46, 88, 0.92);
+  color: #fff0b7;
+}
+
+.theme-toggle svg {
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.8;
+}
+
+.login-page .theme-toggle {
+  border-color: #35415a;
+  background: #182238;
+}
+
+.login-page .login-brand {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+html[data-theme="light"] .app-shell {
+  color-scheme: light;
+  color: #263247;
+  background:
+    radial-gradient(ellipse at 8% 8%, rgba(214, 220, 255, 0.62), transparent 34rem),
+    radial-gradient(ellipse at 96% 82%, rgba(222, 233, 248, 0.68), transparent 31rem),
+    #f2f5fa;
+}
+
+html[data-theme="light"] .app-shell .topbar {
+  border-bottom-color: rgba(216, 223, 235, 0.9);
+  background: rgba(255, 255, 255, 0.88);
+  box-shadow: 0 10px 28px rgba(38, 49, 77, 0.09);
+}
+
+html[data-theme="light"] .app-shell .brand-copy strong,
+html[data-theme="light"] .app-shell .page-heading h1,
+html[data-theme="light"] .app-shell .panel h2,
+html[data-theme="light"] .app-shell .summary-card strong,
+html[data-theme="light"] .app-shell .summary-note strong,
+html[data-theme="light"] .app-shell .employee-details strong {
+  color: #1e2b42;
+}
+
+html[data-theme="light"] .app-shell .brand-copy small,
+html[data-theme="light"] .app-shell .user-badge,
+html[data-theme="light"] .app-shell .page-description,
+html[data-theme="light"] .app-shell .summary-card p,
+html[data-theme="light"] .app-shell .summary-caption,
+html[data-theme="light"] .app-shell .summary-note p,
+html[data-theme="light"] .app-shell .form-intro,
+html[data-theme="light"] .app-shell .profile-private,
+html[data-theme="light"] .app-shell .employee-details small,
+html[data-theme="light"] .app-shell .panel-footer {
+  color: #65738a;
+}
+
+html[data-theme="light"] .app-shell .page-heading {
+  border-color: #dce3ee;
+  background: linear-gradient(112deg, #fff 0%, #f7f8ff 58%, #eeefff 100%);
+  box-shadow: 0 16px 40px rgba(42, 53, 92, 0.08);
+}
+
+html[data-theme="light"] .app-shell .page-heading .eyebrow,
+html[data-theme="light"] .app-shell .panel-kicker {
+  color: #6962bd;
+}
+
+html[data-theme="light"] .app-shell .heading-badge,
+html[data-theme="light"] .app-shell .user-badge {
+  border-color: #dfe5ef;
+  background: rgba(255, 255, 255, 0.84);
+  color: #5b6980;
+}
+
+html[data-theme="light"] .app-shell .panel,
+html[data-theme="light"] .app-shell .summary-note,
+html[data-theme="light"] .app-shell .summary-card {
+  border-color: #dfe5ef;
+  background: linear-gradient(145deg, #fff, #f8f9fd);
+  box-shadow: 0 10px 28px rgba(35, 47, 76, 0.08);
+}
+
+html[data-theme="light"] .app-shell .summary-card:hover {
+  border-color: #c9c5ee;
+  box-shadow: 0 16px 34px rgba(45, 43, 112, 0.12);
+}
+
+html[data-theme="light"] .app-shell .refresh-button,
+html[data-theme="light"] .app-shell .logout-button,
+html[data-theme="light"] .app-shell .topbar .refresh-button,
+html[data-theme="light"] .app-shell .topbar .logout-button {
+  border-color: #d9e0ec;
+  background: #fff;
+  color: #48566d;
+}
+
+html[data-theme="light"] .app-shell .refresh-button:hover:not(:disabled),
+html[data-theme="light"] .app-shell .logout-button:hover:not(:disabled) {
+  border-color: #c5c0ee;
+  background: #f5f4ff;
+  color: #40389a;
+}
+
+html[data-theme="light"] .app-shell .admin-page-nav {
+  border-color: #dce2ee;
+  background: #edf1f7;
+}
+
+html[data-theme="light"] .app-shell .admin-page-nav button {
+  color: #68758a;
+}
+
+html[data-theme="light"] .app-shell .admin-page-nav button:hover:not(.active) {
+  background: #e1e6f0;
+  color: #29364c;
+}
+
+html[data-theme="light"] .app-shell .admin-page-nav button.active {
+  background: linear-gradient(135deg, #665cd1, #5147bc);
+  color: #fff;
+  box-shadow: 0 3px 10px rgba(70, 63, 160, 0.22);
+}
+
+html[data-theme="light"] .app-shell .topbar .theme-toggle {
+  border-color: #d7deea;
+  background: #f1f4fa;
+  color: #6755bc;
+}
+
+html[data-theme="light"] .app-shell .topbar .theme-toggle:hover {
+  border-color: #c6c0ed;
+  background: #e9e7fb;
+}
+
+html[data-theme="light"] .app-shell .employee-form input,
+html[data-theme="light"] .app-shell .password-change-form input,
+html[data-theme="light"] .app-shell .search-box,
+html[data-theme="light"] .app-shell .search-box input {
+  border-color: #d7deea;
+  background: #fff;
+  color: #263247;
+}
+
+html[data-theme="light"] .app-shell .employee-form label > span,
+html[data-theme="light"] .app-shell .password-change-form label > span {
+  color: #4c5b73;
+}
+
+html[data-theme="light"] .app-shell .table-wrap {
+  border-color: #dfe5ef;
+  background: #fff;
+}
+
+html[data-theme="light"] .app-shell thead th {
+  border-bottom-color: #dfe5ef;
+  background: #f1f4f9;
+  color: #53627a;
+}
+
+html[data-theme="light"] .app-shell tbody tr {
+  border-bottom-color: #e7ebf2;
+  color: #3d4b61;
+}
+
+html[data-theme="light"] .app-shell tbody tr:hover {
+  background: #f6f5ff;
+}
+
+html[data-theme="light"] .app-shell .profile-field,
+html[data-theme="light"] .app-shell .employee-document-list > li {
+  border-color: #dfe5ef;
+  background: #fff;
+  color: #334158;
+}
+
+html[data-theme="light"] .app-shell .profile-field span,
+html[data-theme="light"] .app-shell .employee-document-info small {
+  color: #68768b;
+}
+
+html[data-theme="light"] .app-shell .profile-field strong,
+html[data-theme="light"] .app-shell .employee-document-info strong {
+  color: #263247;
+}
+
+html[data-theme="light"] .app-shell .document-upload-option {
+  border-color: #d9e0ed;
+  background: linear-gradient(145deg, #fff, #f6f7fc);
+}
+
+html[data-theme="light"] .app-shell .document-option-copy strong {
+  color: #263247;
+}
+
+html[data-theme="light"] .app-shell .document-option-copy small,
+html[data-theme="light"] .app-shell .document-option-copy em {
+  color: #6a778d;
+}
+
+html[data-theme="light"] .app-shell .aadhaar-photo-preview {
+  border-color: #d7deea;
+  background: #f5f7fb;
+}
+
+html[data-theme="light"] .app-shell .aadhaar-photo-preview p {
+  color: #65738a;
+}
+
+html[data-theme="light"] .app-shell .admin-page-nav + .refresh-button {
+  border-color: #d9e0ec;
+}
+
+html[data-theme="light"] .login-page {
+  color-scheme: light;
+  color: #273348;
+  background:
+    radial-gradient(ellipse at 7% 5%, rgba(215, 220, 255, 0.75), transparent 34rem),
+    radial-gradient(ellipse at 92% 93%, rgba(218, 235, 249, 0.7), transparent 31rem),
+    #f3f5fa;
+}
+
+html[data-theme="light"] .login-page .brand-copy strong {
+  color: #202746;
+}
+
+html[data-theme="light"] .login-page .brand-copy small,
+html[data-theme="light"] .login-page .login-footer {
+  color: #748096;
+}
+
+html[data-theme="light"] .login-page .login-card {
+  border-color: #e0e5ef;
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: 0 24px 60px rgba(35, 48, 83, 0.12);
+}
+
+html[data-theme="light"] .login-page .login-card-heading h2 {
+  color: #202744;
+}
+
+html[data-theme="light"] .login-page .login-card-heading > p:last-child,
+html[data-theme="light"] .login-page .login-password-label > span {
+  color: #65738a;
+}
+
+html[data-theme="light"] .login-page .login-form label > span {
+  color: #48566d;
+}
+
+html[data-theme="light"] .login-page .login-form input {
+  border-color: #d9e0ec;
+  background: #fff;
+  color: #263247;
+}
+
+html[data-theme="light"] .login-page .auth-mode-tabs {
+  border-color: #e0e5ef;
+  background: #edf0f7;
+}
+
+html[data-theme="light"] .login-page .auth-mode-tabs button {
+  color: #64728a;
+}
+
+html[data-theme="light"] .login-page .auth-mode-tabs button.active {
+  background: #fff;
+  color: #5148b7;
+}
+
+html[data-theme="light"] .login-page .theme-toggle {
+  border-color: #d9e0ec;
+  background: #fff;
+  color: #5148b7;
+}
+
+html[data-theme="light"] .login-page .forgot-password-help {
+  border-color: #dfe5ef;
+  background: #f5f7fb;
+  color: #344258;
+}
+
+html[data-theme="light"] .login-page .forgot-password-help p {
+  color: #64728a;
+}
+
+html[data-theme="light"] .app-shell .overview-stat-card p,
+html[data-theme="light"] .app-shell .overview-requests-card > p:not(.panel-kicker),
+html[data-theme="light"] .app-shell .overview-empty-copy {
+  color: #65738a;
+}
+
+html[data-theme="light"] .app-shell .overview-stat-card strong,
+html[data-theme="light"] .app-shell .overview-departments h2,
+html[data-theme="light"] .app-shell .overview-requests-card h2 {
+  color: #263247;
+}
+
+html[data-theme="light"] .app-shell .department-breakdown-label {
+  color: #45536a;
+}
+
+html[data-theme="light"] .app-shell .department-breakdown-label strong {
+  color: #69778c;
+}
+
+html[data-theme="light"] .app-shell .department-breakdown-track {
+  background: #e5e9f1;
+}
+
+.account-settings-page {
+  max-width: 1000px;
+}
+
+.account-settings-panel {
+  padding: 26px 30px;
+}
+
+.account-settings-panel .directory-heading {
+  align-items: flex-start;
+  margin-bottom: 20px;
+}
+
+.settings-profile-form,
+.settings-password-form {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px 20px;
+}
+
+.settings-profile-form label,
+.settings-password-form label {
+  display: grid;
+  min-width: 0;
+  gap: 7px;
+}
+
+.settings-profile-form label > span,
+.settings-password-form label > span {
+  color: #c9d1e0;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.settings-profile-form input,
+.settings-password-form input {
+  width: 100%;
+  min-height: 44px;
+  padding: 0 12px;
+  border: 1px solid #35415a;
+  border-radius: 9px;
+  outline: none;
+  background: #0d1728;
+  color: #f1f4fb;
+  font: inherit;
+  font-size: 13px;
+}
+
+.settings-profile-form input:focus,
+.settings-password-form input:focus {
+  border-color: #9289f2;
+  box-shadow: 0 0 0 4px rgba(132, 119, 238, 0.15);
+}
+
+.settings-address-field,
+.settings-profile-form > button,
+.settings-password-form > button {
+  grid-column: 1 / -1;
+}
+
+.settings-profile-form > button,
+.settings-password-form > button {
+  justify-self: start;
+  min-width: 170px;
+}
+
+.settings-loading {
+  display: flex;
+  min-height: 170px;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+
+.settings-loading p {
+  margin: 0;
+  color: #9aa7bc;
+  font-size: 13px;
+}
+
+html[data-theme="light"] .settings-profile-form label > span,
+html[data-theme="light"] .settings-password-form label > span {
+  color: #4c5b73;
+}
+
+html[data-theme="light"] .settings-profile-form input,
+html[data-theme="light"] .settings-password-form input {
+  border-color: #d7deea;
+  background: #fff;
+  color: #263247;
+}
+
+html[data-theme="light"] .settings-loading p {
+  color: #65738a;
+}
+
+@media (max-width: 620px) {
+  .account-settings-panel {
+    padding: 19px;
+  }
+
+  .settings-profile-form,
+  .settings-password-form {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 13px;
+  }
+
+  .settings-address-field,
+  .settings-profile-form > button,
+  .settings-password-form > button {
+    grid-column: auto;
   }
 }

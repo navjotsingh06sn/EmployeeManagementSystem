@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { apiRequest } from "../api";
 import Brand from "../components/Brand";
+import ThemeToggle from "../components/ThemeToggle";
 
 export default function AdminOverview({
   email,
@@ -8,6 +9,7 @@ export default function AdminOverview({
   onOpenRequests,
   onNavigateEmployees,
   onNavigateOverview,
+  onNavigateSettings,
 }) {
   const [employees, setEmployees] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -60,11 +62,13 @@ export default function AdminOverview({
       <header className="topbar">
         <Brand />
         <div className="topbar-right">
+          <ThemeToggle />
           <nav className="admin-page-nav" aria-label="Admin pages">
             <button className="active" onClick={onNavigateOverview}>
               Overview
             </button>
             <button onClick={onNavigateEmployees}>Employees</button>
+            <button onClick={onNavigateSettings}>Settings</button>
           </nav>
           <span className="user-badge">
             <span className="live-dot" /> Admin · {email}

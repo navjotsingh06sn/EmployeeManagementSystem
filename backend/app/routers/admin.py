@@ -3,11 +3,46 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from pymongo import ASCENDING
 
 from backend.app.database import employees, users
-from backend.app.schemas import PasswordChangeRequest
+from backend.app.schemas import AdminProfileUpdate, PasswordChangeRequest
 from backend.app.security import hash_password, password_hash, require_admin
 from backend.app.services import public_employee
 
 router = APIRouter()
+
+
+@router.get("/admin/me")
+def get_admin_profile(admin: dict = Depends(require_admin)):
+    return {
+        "name": admin.get("name", "Administrator"),
+        "email": admin["email"],
+        "department": admin.get("department", "Administration"),
+        "contact_number": admin.get("contact_number", ""),
+        "address": admin.get("address", ""),
+    }
+
+
+@router.put("/admin/me")
+def update_admin_profile(
+    request: AdminProfileUpdate,
+    admin: dict = Depends(require_admin),
+):
+    data = request.model_dump()
+    data["name"] = data["name"].strip()
+    data["email"] = str(data["email"]).lower()
+    data["department"] = data["department"].strip()
+    data["contact_number"] = data["contact_number"].strip()
+    data["address"] = data["address"].strip()
+
+    email_in_use = users.find_one({"email": data["email"], "_id": {"$ne": admin["_id"]}})
+    employee_email_in_use = employees.find_one({"email": data["email"]})
+    if email_in_use or employee_email_in_use:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Another account already uses this email address.",
+        )
+
+    users.update_one({"_id": admin["_id"]}, {"$set": data})
+    return data
 
 @router.get("/admin/requests")
 def get_pending_employee_requests(_: dict = Depends(require_admin)):

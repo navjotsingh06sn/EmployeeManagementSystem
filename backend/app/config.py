@@ -14,7 +14,9 @@ SECRET_KEY = os.getenv("SECRET_KEY")
 ADMIN_EMAIL = os.getenv("ADMIN_EMAIL", "").strip().lower()
 ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "")
 ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "60"))
-FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:5173").rstrip("/")
+FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:5173").strip().rstrip("/")
+if FRONTEND_URL and "://" not in FRONTEND_URL:
+    FRONTEND_URL = f"https://{FRONTEND_URL}"
 TESSERACT_CMD = os.getenv("TESSERACT_CMD", "").strip()
 SMTP_HOST = os.getenv("SMTP_HOST", "")
 SMTP_PORT = int(os.getenv("SMTP_PORT", "587"))

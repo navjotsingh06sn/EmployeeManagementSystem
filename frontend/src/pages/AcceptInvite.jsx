@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { apiRequest } from "../api";
 import Brand from "../components/Brand";
+import ThemeToggle from "../components/ThemeToggle";
 
 export default function AcceptInvite({ token }) {
   const [profile, setProfile] = useState({
@@ -57,6 +58,7 @@ export default function AcceptInvite({ token }) {
     <div className="login-page">
       <div className="login-brand">
         <Brand />
+        <ThemeToggle />
       </div>
       <main className="login-layout">
         <section className="login-welcome">

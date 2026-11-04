@@ -50,7 +50,7 @@ def initialize_database() -> None:
     )
     users.create_index([("employee_id", ASCENDING)], unique=True, sparse=True)
 
-    if not users.find_one({"email": ADMIN_EMAIL}):
+    if not users.find_one({"role": "admin"}):
         users.insert_one(
             {
                 "email": ADMIN_EMAIL,
