@@ -3,6 +3,7 @@ import { apiRequest } from "../api";
 import Brand from "../components/Brand";
 import ThemeToggle from "../components/ThemeToggle";
 import { initials } from "../components/helpers";
+import useAutoRefresh from "../hooks/useAutoRefresh";
 
 export default function PendingRequests({ email, onLogout, onBack, onOpenSettings }) {
   const [requests, setRequests] = useState([]);
@@ -24,9 +25,9 @@ export default function PendingRequests({ email, onLogout, onBack, onOpenSetting
 
   useEffect(() => {
     loadRequests();
-    const refreshTimer = window.setInterval(loadRequests, 30000);
-    return () => window.clearInterval(refreshTimer);
   }, [loadRequests]);
+
+  useAutoRefresh(loadRequests);
 
   async function handleDecision(employee, decision) {
     setBusyId(employee.id);

@@ -21,6 +21,58 @@ if TESSERACT_CMD:
     pytesseract.pytesseract.tesseract_cmd = TESSERACT_CMD
 
 
+# Script models recognize several languages that share a writing system, so
+# one OCR pass can handle mixed regional-language and English documents.
+SCRIPT_LANGUAGES = {
+    "Arabic": "script/Arabic",
+    "Bengali": "script/Bengali",
+    "Devanagari": "script/Devanagari",
+    "Gujarati": "script/Gujarati",
+    "Gurmukhi": "script/Gurmukhi",
+    "Kannada": "script/Kannada",
+    "Latin": "script/Latin",
+    "Malayalam": "script/Malayalam",
+    "Oriya": "script/Oriya",
+    "Tamil": "script/Tamil",
+    "Telugu": "script/Telugu",
+}
+
+LANGUAGE_FALLBACKS = {
+    "Arabic": "urd+eng",
+    "Bengali": "ben+eng",
+    "Devanagari": "hin+eng",
+    "Gujarati": "guj+eng",
+    "Gurmukhi": "pan+eng",
+    "Kannada": "kan+eng",
+    "Latin": "eng",
+    "Malayalam": "mal+eng",
+    "Oriya": "ori+eng",
+    "Tamil": "tam+eng",
+    "Telugu": "tel+eng",
+}
+
+
+def _detect_ocr_language(image) -> str:
+    """Choose an installed Tesseract model based on the document's script."""
+    try:
+        osd = pytesseract.image_to_osd(image, config="--psm 0")
+        script = re.search(r"(?m)^Script:\s*(.+?)\s*$", osd)
+        detected_script = script.group(1) if script else None
+        available = set(pytesseract.get_languages(config=""))
+        for language in (
+            SCRIPT_LANGUAGES.get(detected_script),
+            LANGUAGE_FALLBACKS.get(detected_script),
+        ):
+            if language and all(
+                part in available for part in language.split("+")
+            ):
+                return language
+    except (pytesseract.TesseractError, ValueError):
+        # OSD can fail on short or blurry cards; keep the upload usable.
+        pass
+    return "eng"
+
+
 def extract_document_text(image_bytes: bytes, document_type: str = "aadhaar") -> str:
     """
     Extract text from document images or PDFs using local OCR.
@@ -52,6 +104,7 @@ def extract_document_text(image_bytes: bytes, document_type: str = "aadhaar") ->
         grayscale = ImageEnhance.Sharpness(grayscale).enhance(1.5)
 
         thresholded = grayscale.point(lambda value: 255 if value > 165 else 0)
+        language = _detect_ocr_language(grayscale)
         best_text = ""
         best_score = float("-inf")
         for candidate in (grayscale, thresholded):
@@ -59,7 +112,7 @@ def extract_document_text(image_bytes: bytes, document_type: str = "aadhaar") ->
             for page_mode in page_modes:
                 data = pytesseract.image_to_data(
                     candidate,
-                    lang="eng",
+                    lang=language,
                     config=f"--oem 3 --psm {page_mode}",
                     output_type=pytesseract.Output.DICT,
                 )
@@ -160,7 +213,11 @@ def extract_document_text(image_bytes: bytes, document_type: str = "aadhaar") ->
     except pytesseract.TesseractNotFoundError as error:
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail="Tesseract OCR not found. Check your installation path."
+            detail=(
+                "Tesseract OCR is not installed or could not be found. Install "
+                "Tesseract OCR, restart the backend, or set TESSERACT_CMD to "
+                "the full path of tesseract.exe."
+            ),
         ) from error
 
     except pytesseract.TesseractError as error:

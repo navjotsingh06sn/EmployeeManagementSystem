@@ -4,6 +4,7 @@ import Brand from "../components/Brand";
 import { initials } from "../components/helpers";
 import OcrDetails from "../components/OcrDetails";
 import ThemeToggle from "../components/ThemeToggle";
+import useAutoRefresh from "../hooks/useAutoRefresh";
 
 const emptyForm = {
   name: "",
@@ -49,9 +50,9 @@ export default function AdminDashboard({
 
   useEffect(() => {
     loadEmployees();
-    const refreshTimer = window.setInterval(loadEmployees, 30000);
-    return () => window.clearInterval(refreshTimer);
   }, []);
+
+  useAutoRefresh(loadEmployees);
 
 
   const pendingRequestCount = employees.filter(
@@ -242,6 +243,20 @@ export default function AdminDashboard({
       setDocumentsLoading(false);
     }
   }
+
+  async function refreshEmployeeDocuments() {
+    if (!documentEmployee) return;
+    try {
+      setEmployeeDocuments(
+        await apiRequest(`/employees/${documentEmployee.id}/documents`)
+      );
+      setDocumentsError("");
+    } catch (err) {
+      setDocumentsError(err.message || "Could not refresh employee documents.");
+    }
+  }
+
+  useAutoRefresh(refreshEmployeeDocuments, 10000, Boolean(documentEmployee));
 
   async function downloadEmployeeDocument(documentFile) {
     setDocumentsError("");

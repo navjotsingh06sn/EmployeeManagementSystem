@@ -1,20 +1,31 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { apiRequest } from "../api";
 import Brand from "../components/Brand";
 import ThemeToggle from "../components/ThemeToggle";
 import { initials } from "../components/helpers";
+import useAutoRefresh from "../hooks/useAutoRefresh";
 
 export default function EmployeePortal({ email, onLogout, onOpenSettings, onOpenDocuments }) {
   const [employee, setEmployee] = useState(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    apiRequest("/employees/me")
-      .then(setEmployee)
-      .catch((err) => setError(err.message || "Could not load your profile."))
-      .finally(() => setLoading(false));
+  const loadEmployee = useCallback(async () => {
+    try {
+      setEmployee(await apiRequest("/employees/me"));
+      setError("");
+    } catch (err) {
+      setError(err.message || "Could not load your profile.");
+    } finally {
+      setLoading(false);
+    }
   }, []);
+
+  useEffect(() => {
+    loadEmployee();
+  }, [loadEmployee]);
+
+  useAutoRefresh(loadEmployee);
 
   return (
     <div className="app-shell">

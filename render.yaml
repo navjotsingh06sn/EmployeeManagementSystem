@@ -2,7 +2,7 @@ services:
   - type: web
     name: employeemanager-api
     runtime: python
-    buildCommand: apt-get update && apt-get install -y tesseract-ocr && pip install -r requirements.txt
+    buildCommand: apt-get update && apt-get install -y tesseract-ocr tesseract-ocr-script-arab tesseract-ocr-script-beng tesseract-ocr-script-deva tesseract-ocr-script-gujr tesseract-ocr-script-guru tesseract-ocr-script-knda tesseract-ocr-script-latn tesseract-ocr-script-mlym tesseract-ocr-script-orya tesseract-ocr-script-taml tesseract-ocr-script-telu && pip install -r requirements.txt
     startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
     healthCheckPath: /
     envVars:

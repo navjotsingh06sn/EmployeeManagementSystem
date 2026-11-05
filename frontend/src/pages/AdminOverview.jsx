@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { apiRequest } from "../api";
 import Brand from "../components/Brand";
 import ThemeToggle from "../components/ThemeToggle";
+import useAutoRefresh from "../hooks/useAutoRefresh";
 
 export default function AdminOverview({
   email,
@@ -28,9 +29,9 @@ export default function AdminOverview({
 
   useEffect(() => {
     loadEmployees();
-    const refreshTimer = window.setInterval(loadEmployees, 30000);
-    return () => window.clearInterval(refreshTimer);
   }, [loadEmployees]);
+
+  useAutoRefresh(loadEmployees);
 
   const activeCount = employees.filter(
     (employee) => employee.is_active !== false

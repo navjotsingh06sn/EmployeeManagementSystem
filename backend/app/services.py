@@ -143,6 +143,12 @@ def extract_document_details(text: str, document_type: str) -> dict[str, str]:
     """Return only fields visibly supported by the OCR text."""
     lines = [line.strip() for line in text.splitlines() if line.strip()]
     normalized = "\n".join(lines)
+    # Python recognizes many localized decimal digits as digits, but normalize
+    # them for Aadhaar and phone fields so the extracted numbers are usable.
+    normalized_digits = "".join(
+        str(int(character)) if character.isdecimal() else character
+        for character in normalized
+    )
     details: dict[str, str] = {}
 
     def labeled_value(pattern: str) -> str:
@@ -155,11 +161,20 @@ def extract_document_details(text: str, document_type: str) -> dict[str, str]:
                 return following[0].strip(" :-")
         return ""
 
-    name = labeled_value(r"\bname\b")
-    father = labeled_value(r"(?:father(?:'s)?(?:\s+name)?|s/o|d/o|w/o|c/o|care\s+of)")
-    address = labeled_value(r"\baddress\b")
+    name = labeled_value(r"(?:\bname\b|नाम|பெயர்|పేరు|ಹೆಸರು|નામ|নাম|ਨਾਮ|പേര്|ନାମ|نام)")
+    father = labeled_value(
+        r"(?:father(?:'s)?(?:\s+name)?|s/o|d/o|w/o|c/o|care\s+of|"
+        r"पिता(?:\s+का\s+नाम)?|পিতার\s+নাম|પિતાનું\s+નામ|"
+        r"ਪਿਤਾ(?:\s+ਦਾ\s+ਨਾਮ)?|പിതാവിന്റെ\s+പേര്|"
+        r"தந்தையின்\s+பெயர்|తండ్రి\s+పేరు|ತಂದೆಯ\s+ಹೆಸರು|"
+        r"ପିତାଙ୍କ\s+ନାମ|والد(?:\s+کا\s+نام)?)"
+    )
+    address = labeled_value(
+        r"(?:\baddress\b|पता|ঠিকানা|સરનામું|ਪਤਾ|വിലാസം|"
+        r"முகவரி|చిరునామా|ವಿಳಾಸ|ଠିକଣା|پتہ)"
+    )
     aadhaar_match = re.search(
-        r"(?<!\d)(?:\d[\s-]*){11}\d(?!\d)", normalized
+        r"(?<!\d)(?:\d[\s-]*){11}\d(?!\d)", normalized_digits
     ) if document_type == "aadhaar" else None
     pan_match = (
         re.search(r"\b[A-Z]{5}\s?\d{4}\s?[A-Z]\b", normalized, re.I)
@@ -169,7 +184,7 @@ def extract_document_details(text: str, document_type: str) -> dict[str, str]:
     email_match = re.search(
         r"\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b", normalized, re.I
     )
-    phone_source = normalized
+    phone_source = normalized_digits
     if aadhaar_match:
         phone_source = phone_source.replace(aadhaar_match.group(0), " ")
     phone_match = re.search(
@@ -182,8 +197,16 @@ def extract_document_details(text: str, document_type: str) -> dict[str, str]:
         "father_name": father,
         "address": address,
         "phone": phone_match.group(0).strip() if phone_match else "",
-        "date_of_birth": labeled_value(r"(?:date\s+of\s+birth|dob)") or labeled_value(r"\byob\b"),
-        "gender": labeled_value(r"\b(?:gender|sex)\b"),
+        "date_of_birth": labeled_value(
+            r"(?:date\s+of\s+birth|dob|\byob\b|जन्म\s*(?:तिथि|दिनांक)|"
+            r"জন্ম\s*তারিখ|જન્મ\s*તારીખ|જਨਮ\s*ਤਾਰੀਖ|જન્મ\s*તାରିଖ|"
+            r"ജനന\s*തീയതി|பிறந்த\s*தேதி|పుట్టిన\s*తేదీ|"
+            r"ಜನ್ಮ\s*ದಿನಾಂಕ|تاريخ\s*الميلاد|تاریخ\s*پیدائش)"
+        ),
+        "gender": labeled_value(
+            r"(?:\b(?:gender|sex)\b|लिंग|লিঙ্গ|લિંગ|ਲਿੰਗ|ലിംഗം|"
+            r"பாலினம்|లింగం|ಲಿಂಗ|ଲିଙ୍ଗ|الجنس|جنس)"
+        ),
         "aadhaar_number": (
             " ".join(aadhaar_match.group(0).replace("-", " ").split())
             if aadhaar_match

@@ -347,17 +347,6 @@ async def upload_my_document(
     ocr_text = extract_document_text(content, document_type=ocr_mode)
     stored_document_type = detect_document_type(ocr_text, document_type)
 
-    if db["employee_documents.files"].find_one(
-        {
-            "metadata.employee_id": user["employee_id"],
-            "metadata.document_type": stored_document_type,
-        }
-    ):
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
-            detail=f"A {stored_document_type} is already uploaded. Delete it before uploading another.",
-        )
-
     document_id = documents_bucket.upload_from_stream(
         filename,
         content,

@@ -1,7 +1,8 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { apiRequest } from "../api";
 import Brand from "../components/Brand";
 import ThemeToggle from "../components/ThemeToggle";
+import useAutoRefresh from "../hooks/useAutoRefresh";
 
 const emptyProfile = {
   name: "",
@@ -25,20 +26,35 @@ export default function AccountSettings({ role, email, onBack, onLogout, onAccou
   const [savingPassword, setSavingPassword] = useState(false);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
+  const profileDirtyRef = useRef(false);
 
   const isAdmin = role === "admin";
   const profileEndpoint = isAdmin ? "/admin/me" : "/employees/me";
   const passwordEndpoint = isAdmin ? "/admin/me/password" : "/employees/me/password";
 
-  useEffect(() => {
-    apiRequest(profileEndpoint)
-      .then((data) => setProfile({ ...emptyProfile, ...data }))
-      .catch((err) => setError(err.message || "Could not load your account details."))
-      .finally(() => setLoading(false));
+  const loadProfile = useCallback(async () => {
+    try {
+      const data = await apiRequest(profileEndpoint);
+      if (!profileDirtyRef.current) {
+        setProfile({ ...emptyProfile, ...data });
+        setError("");
+      }
+    } catch (err) {
+      setError(err.message || "Could not load your account details.");
+    } finally {
+      setLoading(false);
+    }
   }, [profileEndpoint]);
+
+  useEffect(() => {
+    loadProfile();
+  }, [loadProfile]);
+
+  useAutoRefresh(loadProfile);
 
   function updateProfile(event) {
     const { name, value } = event.target;
+    profileDirtyRef.current = true;
     setProfile((current) => ({ ...current, [name]: value }));
   }
 
@@ -64,6 +80,7 @@ export default function AccountSettings({ role, email, onBack, onLogout, onAccou
         }),
       });
       setProfile((current) => ({ ...current, ...updated }));
+      profileDirtyRef.current = false;
       onAccountUpdated(updated);
       setNotice("Your account details have been updated.");
     } catch (err) {

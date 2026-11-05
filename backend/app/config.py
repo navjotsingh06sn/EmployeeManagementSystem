@@ -1,6 +1,7 @@
 """Environment-backed application settings."""
 
 import os
+import shutil
 from pathlib import Path
 
 from dotenv import load_dotenv
@@ -17,7 +18,18 @@ ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "60")
 FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:5173").strip().rstrip("/")
 if FRONTEND_URL and "://" not in FRONTEND_URL:
     FRONTEND_URL = f"https://{FRONTEND_URL}"
-TESSERACT_CMD = os.getenv("TESSERACT_CMD", "").strip()
+_configured_tesseract = os.getenv("TESSERACT_CMD", "").strip().strip('"')
+_tesseract_candidates = (
+    Path(os.environ.get("ProgramFiles", r"C:\Program Files"))
+    / "Tesseract-OCR" / "tesseract.exe",
+    Path(os.environ.get("ProgramFiles(x86)", r"C:\Program Files (x86)"))
+    / "Tesseract-OCR" / "tesseract.exe",
+)
+TESSERACT_CMD = (
+    _configured_tesseract
+    or shutil.which("tesseract")
+    or next((str(path) for path in _tesseract_candidates if path.is_file()), "")
+)
 SMTP_HOST = os.getenv("SMTP_HOST", "")
 SMTP_PORT = int(os.getenv("SMTP_PORT", "587"))
 SMTP_USERNAME = os.getenv("SMTP_USERNAME", "")
